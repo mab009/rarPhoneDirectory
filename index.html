@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Medical Directory</title>
+    <style>
+        /* (Styles remain the same as the previous example) */
+        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 600px; margin: auto; }
+        #searchInput { width: 100%; padding: 12px; margin-bottom: 20px; }
+        .contact-card { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .call-btn { background: #3498db; color: white; text-decoration: none; padding: 10px; border-radius: 5px; }
+        .category-tag { font-size: 0.8em; color: #666; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Medical Directory</h1>
+    <input type="text" id="searchInput" placeholder="Search names or locations..." onkeyup="filterList()">
+    <div id="directoryList">Loading contacts...</div>
+</div>
+
+<script>
+    // PASTE YOUR PUBLISHED CSV LINK HERE
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?output=csv';
+
+    async function loadDirectory() {
+        const response = await fetch(sheetUrl);
+        const data = await response.text();
+        const rows = data.split('\n').slice(1); // Skip the header row
+        
+        const listContainer = document.getElementById('directoryList');
+        listContainer.innerHTML = '';
+
+        rows.forEach(row => {
+            const columns = row.split(',');
+            if (columns.length < 4) return; // Skip empty rows
+
+            const [name, category, desc, phone, location] = columns;
+            const cleanPhone = phone.replace(/\D/g,''); // Removes dashes for the tel: link
+
+            const card = `
+                <div class="contact-card" data-search="${name} ${location} ${category}">
+                    <div>
+                        <span class="category-tag">${category}</span>
+                        <h3 style="margin:5px 0">${name}</h3>
+                        <p style="margin:0; font-size: 0.9em; color: #555;">${desc} - ${location}</p>
+                    </div>
+                    <a href="tel:${cleanPhone}" class="call-btn">📞 Call</a>
+                </div>
+            `;
+            listContainer.innerHTML += card;
+        });
+    }
+
+    function filterList() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const cards = document.getElementsByClassName('contact-card');
+        Array.from(cards).forEach(card => {
+            const text = card.getAttribute('data-search').toLowerCase();
+            card.style.display = text.includes(input) ? "flex" : "none";
+        });
+    }
+
+    loadDirectory();
+</script>
+</body>
+</html>
