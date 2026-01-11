@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MRA Comprehensive Directory</title>
+    <title>MRA Directory</title>
     <style>
         :root { --dark: #3c4043; --blue: #1a73e8; --gray: #70757a; --border: #dadce0; --light-bg: #f8f9fa; }
         body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 0; background: #fff; color: var(--dark); -webkit-tap-highlight-color: transparent; }
@@ -19,25 +19,36 @@
         
         .location-content { display: none; }
         
-        /* Fixed Phone Column at 150px to guarantee no-wrap */
-        .contact-row { 
-            display: grid;
-            grid-template-columns: 1fr 150px; 
-            align-items: center; 
-            padding: 8px 12px; 
-            border-bottom: 1px solid #f1f3f4; 
-            gap: 10px;
-            width: 100%;
-            box-sizing: border-box;
+        /* TABLE LAYOUT: Forces the phone column to 150px and prevents name from expanding */
+        .contact-table { 
+            display: table; 
+            width: 100%; 
+            table-layout: fixed; /* This is the key to no-wrap */
+            border-collapse: collapse;
         }
 
-        .display-text { 
+        .contact-row { 
+            display: table-row; 
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .cell-name { 
+            display: table-cell;
+            padding: 10px 12px;
             font-size: 0.9rem; 
             font-weight: 500; 
             overflow: hidden; 
             text-overflow: ellipsis; 
             white-space: nowrap;
-            min-width: 0; 
+            vertical-align: middle;
+        }
+
+        .cell-phone { 
+            display: table-cell;
+            width: 150px; /* Fixed width */
+            padding: 10px 12px;
+            text-align: right;
+            vertical-align: middle;
         }
 
         .phone-link { 
@@ -46,9 +57,6 @@
             text-decoration: none; 
             font-weight: 700;
             white-space: nowrap !important; 
-            display: block;
-            text-align: right;
-            padding: 6px 0;
         }
 
         .chevron::after { content: '▼'; font-size: 0.6rem; color: var(--gray); }
@@ -60,7 +68,7 @@
 
 <header><h1>MRA Phone Directory</h1></header>
 <div class="search-container">
-    <input type="text" id="searchInput" placeholder="Search locations, names, or numbers..." onkeyup="filterList()">
+    <input type="text" id="searchInput" placeholder="Search locations, depts, or numbers..." onkeyup="filterList()">
 </div>
 <div id="directory"><div id="loading">Syncing Spreadsheet...</div></div>
 
@@ -81,6 +89,7 @@
                 if (!loc || !phone) return; 
 
                 if (!grouped[loc]) grouped[loc] = [];
+                // CRITICAL: We pass loc into the object so the row "knows" its location for search
                 grouped[loc].push({ loc, mainText, phone });
             });
             render(grouped);
@@ -94,8 +103,6 @@
         Object.keys(data).sort().forEach(loc => {
             const section = document.createElement('div');
             section.className = 'location-section';
-            // We store the location name on the section itself for easier searching
-            section.setAttribute('data-loc-name', loc.toLowerCase());
             
             const header = document.createElement('div');
             header.className = 'location-header';
@@ -105,16 +112,23 @@
             const content = document.createElement('div');
             content.className = 'location-content';
 
+            const table = document.createElement('div');
+            table.className = 'contact-table';
+
             data[loc].sort((a,b) => (a.mainText || "").localeCompare(b.mainText || "")).forEach(c => {
                 const dial = c.phone.replace(/\D/g, '');
                 
-                // Rows now explicitly searchable by their specific data
-                content.innerHTML += `
-                    <div class="contact-row" data-search-content="${c.loc} ${c.mainText} ${c.phone}">
-                        <span class="display-text">${c.mainText || "---"}</span>
-                        <a href="tel:${dial}" class="phone-link">${c.phone}</a>
+                // IMPORTANT: data-search includes Location + Name + Phone
+                table.innerHTML += `
+                    <div class="contact-row" data-search="${c.loc.toLowerCase()} ${c.mainText.toLowerCase()} ${c.phone.toLowerCase()}">
+                        <div class="cell-name">${c.mainText || "---"}</div>
+                        <div class="cell-phone">
+                            <a href="tel:${dial}" class="phone-link">${c.phone}</a>
+                        </div>
                     </div>`;
             });
+            
+            content.appendChild(table);
             section.appendChild(header);
             section.appendChild(content);
             container.appendChild(section);
@@ -132,32 +146,26 @@
         const sections = document.querySelectorAll('.location-section');
 
         sections.forEach(s => {
-            const locName = s.getAttribute('data-loc-name');
             const rows = s.querySelectorAll('.contact-row');
-            let sectionMatch = false;
-
-            // Check if the search term matches the Location name itself
-            const isLocationMatch = locName.includes(q);
+            let hasMatch = false;
 
             rows.forEach(r => {
-                const content = r.getAttribute('data-search-content').toLowerCase();
-                // Match if search hits content OR the parent location name
-                if (content.includes(q) || isLocationMatch) {
-                    r.style.display = 'grid';
-                    sectionMatch = true;
+                const searchString = r.getAttribute('data-search');
+                if (searchString.includes(q)) {
+                    r.style.display = 'table-row';
+                    hasMatch = true;
                 } else {
                     r.style.display = 'none';
                 }
             });
             
-            // Visibility logic
             if (q === "") {
                 s.style.display = 'block';
                 s.querySelector('.location-header').classList.remove('active');
                 s.querySelector('.location-content').style.display = 'none';
             } else {
-                s.style.display = sectionMatch ? 'block' : 'none';
-                if (sectionMatch) {
+                s.style.display = hasMatch ? 'block' : 'none';
+                if (hasMatch) {
                     s.querySelector('.location-header').classList.add('active');
                     s.querySelector('.location-content').style.display = 'block';
                 }
