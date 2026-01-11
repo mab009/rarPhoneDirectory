@@ -12,17 +12,17 @@
         header h1 { margin: 0; font-size: 1rem; font-weight: 500; }
 
         .search-container { padding: 6px 10px; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 37px; z-index: 999; }
-        #searchInput { width: 100%; padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border); font-size: 16px; outline: none; box-sizing: border-box; }
+        #searchInput { width: 100%; padding: 10px 16px; border-radius: 20px; border: 1px solid var(--border); font-size: 16px; outline: none; box-sizing: border-box; }
 
         .location-section { border-bottom: 1px solid var(--border); }
         .location-header { background: var(--light-bg); padding: 10px 12px; cursor: pointer; display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 700; align-items: center; border-bottom: 1px solid var(--border); }
         
         .location-content { display: none; }
         
-        /* Grid Layout: Name takes remaining space, Phone is locked to 140px */
+        /* Fixed Phone Column at 150px to guarantee no-wrap */
         .contact-row { 
             display: grid;
-            grid-template-columns: 1fr 140px; 
+            grid-template-columns: 1fr 150px; 
             align-items: center; 
             padding: 8px 12px; 
             border-bottom: 1px solid #f1f3f4; 
@@ -45,7 +45,7 @@
             color: var(--blue); 
             text-decoration: none; 
             font-weight: 700;
-            white-space: nowrap !important; /* Forces no-wrap */
+            white-space: nowrap !important; 
             display: block;
             text-align: right;
             padding: 6px 0;
@@ -59,7 +59,9 @@
 <body>
 
 <header><h1>MRA Phone Directory</h1></header>
-<div class="search-container"><input type="text" id="searchInput" placeholder="Search all fields..." onkeyup="filterList()"></div>
+<div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search locations, names, or numbers..." onkeyup="filterList()">
+</div>
 <div id="directory"><div id="loading">Syncing Spreadsheet...</div></div>
 
 <script>
@@ -92,6 +94,8 @@
         Object.keys(data).sort().forEach(loc => {
             const section = document.createElement('div');
             section.className = 'location-section';
+            // We store the location name on the section itself for easier searching
+            section.setAttribute('data-loc-name', loc.toLowerCase());
             
             const header = document.createElement('div');
             header.className = 'location-header';
@@ -104,8 +108,9 @@
             data[loc].sort((a,b) => (a.mainText || "").localeCompare(b.mainText || "")).forEach(c => {
                 const dial = c.phone.replace(/\D/g, '');
                 
+                // Rows now explicitly searchable by their specific data
                 content.innerHTML += `
-                    <div class="contact-row" data-search="${c.loc} ${c.mainText} ${c.phone}">
+                    <div class="contact-row" data-search-content="${c.loc} ${c.mainText} ${c.phone}">
                         <span class="display-text">${c.mainText || "---"}</span>
                         <a href="tel:${dial}" class="phone-link">${c.phone}</a>
                     </div>`;
@@ -124,22 +129,38 @@
 
     function filterList() {
         const q = document.getElementById('searchInput').value.toLowerCase();
-        document.querySelectorAll('.location-section').forEach(s => {
-            let match = false;
-            s.querySelectorAll('.contact-row').forEach(r => {
-                const hit = r.getAttribute('data-search').toLowerCase().includes(q);
-                r.style.display = hit ? 'grid' : 'none'; 
-                if(hit) match = true;
+        const sections = document.querySelectorAll('.location-section');
+
+        sections.forEach(s => {
+            const locName = s.getAttribute('data-loc-name');
+            const rows = s.querySelectorAll('.contact-row');
+            let sectionMatch = false;
+
+            // Check if the search term matches the Location name itself
+            const isLocationMatch = locName.includes(q);
+
+            rows.forEach(r => {
+                const content = r.getAttribute('data-search-content').toLowerCase();
+                // Match if search hits content OR the parent location name
+                if (content.includes(q) || isLocationMatch) {
+                    r.style.display = 'grid';
+                    sectionMatch = true;
+                } else {
+                    r.style.display = 'none';
+                }
             });
             
-            s.style.display = (q === "" || match) ? 'block' : 'none';
-            
-            if(q !== "" && match) {
-                s.querySelector('.location-header').classList.add('active');
-                s.querySelector('.location-content').style.display = 'block';
-            } else if (q === "") {
+            // Visibility logic
+            if (q === "") {
+                s.style.display = 'block';
                 s.querySelector('.location-header').classList.remove('active');
                 s.querySelector('.location-content').style.display = 'none';
+            } else {
+                s.style.display = sectionMatch ? 'block' : 'none';
+                if (sectionMatch) {
+                    s.querySelector('.location-header').classList.add('active');
+                    s.querySelector('.location-content').style.display = 'block';
+                }
             }
         });
     }
