@@ -19,7 +19,6 @@
         
         .location-content { display: none; }
         
-        /* One-Line Row Design */
         .contact-row { 
             display: flex; 
             align-items: center; 
@@ -63,7 +62,6 @@
             font-style: italic;
         }
 
-        /* Clickable Phone Number Styling */
         .phone-link { 
             font-size: 0.85rem; 
             color: var(--blue); 
@@ -99,8 +97,13 @@
             rows.forEach(row => {
                 const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 if (cols.length < 5 || cols[0].includes('{')) return; 
-                const [loc, dept, name, title, phone] = cols.map(c => c.replace(/^"|"$/g, '').trim());
-                if (!loc || !name) return; 
+                
+                // Use default empty strings for blank columns
+                const [loc, dept, name, title, phone] = cols.map(c => c ? c.replace(/^"|"$/g, '').trim() : "");
+                
+                // We still need at least a Location and a Phone to make the entry useful
+                if (!loc || !phone) return; 
+
                 if (!grouped[loc]) grouped[loc] = [];
                 grouped[loc].push({ dept, name, title, phone });
             });
@@ -124,14 +127,20 @@
             const content = document.createElement('div');
             content.className = 'location-content';
 
-            data[loc].sort((a,b) => a.dept.localeCompare(b.dept)).forEach(c => {
+            data[loc].sort((a,b) => (a.dept || "").localeCompare(b.dept || "")).forEach(c => {
                 const dial = c.phone.replace(/\D/g, '');
+                
+                // Only build tags if data exists
+                const deptTag = c.dept ? `<span class="dept-label">${c.dept}</span>` : `<span class="dept-label"></span>`;
+                const nameTag = c.name ? `<span class="contact-name">${c.name}</span>` : '';
+                const titleTag = c.title ? `<span class="contact-title">${c.title}</span>` : '';
+
                 content.innerHTML += `
                     <div class="contact-row" data-search="${c.name} ${c.dept} ${c.title}">
                         <div class="contact-info">
-                            <span class="dept-label">${c.dept}</span>
-                            <span class="contact-name">${c.name}</span>
-                            <span class="contact-title">${c.title}</span>
+                            ${deptTag}
+                            ${nameTag}
+                            ${titleTag}
                         </div>
                         <a href="tel:${dial}" class="phone-link">${c.phone}</a>
                     </div>`;
