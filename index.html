@@ -37,7 +37,7 @@
 </head>
 <body>
 
-<header><h1>RAR Phone Directory</h1></header>
+<header><h1>MRA Phone Directory</h1></header>
 <div class="search-container"><input type="text" id="searchInput" placeholder="Search..." onkeyup="filterList()"></div>
 <div id="directory"><div id="loading">Connecting to Directory...</div></div>
 
@@ -95,4 +95,35 @@
                     </div>`;
             });
 
-            section
+            section.appendChild(header);
+            section.appendChild(content);
+            container.appendChild(section);
+        });
+    }
+
+    function toggle(el) {
+        el.classList.toggle('active');
+        const panel = el.nextElementSibling;
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function filterList() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.location-section').forEach(s => {
+            let match = false;
+            s.querySelectorAll('.contact-row').forEach(r => {
+                const hit = r.getAttribute('data-search').toLowerCase().includes(q);
+                r.style.display = hit ? 'flex' : 'none';
+                if(hit) match = true;
+            });
+            s.style.display = (q === "" || match) ? 'block' : 'none';
+            if(q !== "" && match) {
+                s.querySelector('.location-header').classList.add('active');
+                s.querySelector('.location-content').style.display = 'block';
+            }
+        });
+    }
+    init();
+</script>
+</body>
+</html>
