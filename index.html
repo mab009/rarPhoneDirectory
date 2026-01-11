@@ -19,18 +19,20 @@
         
         .location-content { display: none; }
         
-        /* Grid Layout: Name takes 1fr, Phone is fixed 125px */
+        /* Grid Layout: Name takes remaining space, Phone is locked to 140px */
         .contact-row { 
             display: grid;
-            grid-template-columns: 1fr 125px; 
+            grid-template-columns: 1fr 140px; 
             align-items: center; 
-            padding: 10px 12px; 
+            padding: 8px 12px; 
             border-bottom: 1px solid #f1f3f4; 
             gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .display-text { 
-            font-size: 0.95rem; 
+            font-size: 0.9rem; 
             font-weight: 500; 
             overflow: hidden; 
             text-overflow: ellipsis; 
@@ -39,14 +41,14 @@
         }
 
         .phone-link { 
-            font-size: 0.95rem; 
+            font-size: 0.9rem; 
             color: var(--blue); 
             text-decoration: none; 
             font-weight: 700;
-            white-space: nowrap;
-            text-align: right;
-            padding: 5px 0;
+            white-space: nowrap !important; /* Forces no-wrap */
             display: block;
+            text-align: right;
+            padding: 6px 0;
         }
 
         .chevron::after { content: '▼'; font-size: 0.6rem; color: var(--gray); }
@@ -57,7 +59,7 @@
 <body>
 
 <header><h1>MRA Phone Directory</h1></header>
-<div class="search-container"><input type="text" id="searchInput" placeholder="Search names, depts, or phones..." onkeyup="filterList()"></div>
+<div class="search-container"><input type="text" id="searchInput" placeholder="Search all fields..." onkeyup="filterList()"></div>
 <div id="directory"><div id="loading">Syncing Spreadsheet...</div></div>
 
 <script>
@@ -102,10 +104,9 @@
             data[loc].sort((a,b) => (a.mainText || "").localeCompare(b.mainText || "")).forEach(c => {
                 const dial = c.phone.replace(/\D/g, '');
                 
-                // data-search now includes location, text, and phone for 100% coverage
                 content.innerHTML += `
                     <div class="contact-row" data-search="${c.loc} ${c.mainText} ${c.phone}">
-                        <span class="display-text">${c.mainText || "No Name Provided"}</span>
+                        <span class="display-text">${c.mainText || "---"}</span>
                         <a href="tel:${dial}" class="phone-link">${c.phone}</a>
                     </div>`;
             });
@@ -131,15 +132,12 @@
                 if(hit) match = true;
             });
             
-            // If searching, hide empty sections. If not searching, reset to block.
             s.style.display = (q === "" || match) ? 'block' : 'none';
             
-            // Auto-expand sections that have matches while searching
             if(q !== "" && match) {
                 s.querySelector('.location-header').classList.add('active');
                 s.querySelector('.location-content').style.display = 'block';
             } else if (q === "") {
-                // Collapses all when search is cleared for a clean view
                 s.querySelector('.location-header').classList.remove('active');
                 s.querySelector('.location-content').style.display = 'none';
             }
