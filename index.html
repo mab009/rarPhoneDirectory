@@ -23,9 +23,9 @@
         .contact-row { 
             display: flex; 
             align-items: center; 
-            padding: 6px 12px; 
+            padding: 8px 12px; 
             border-bottom: 1px solid #f1f3f4; 
-            gap: 8px;
+            gap: 10px;
         }
 
         .contact-info { 
@@ -34,7 +34,7 @@
             align-items: baseline; 
             overflow: hidden; 
             white-space: nowrap; 
-            gap: 6px;
+            gap: 8px;
         }
 
         .dept-label { 
@@ -42,7 +42,7 @@
             color: var(--blue); 
             font-weight: 800; 
             flex-shrink: 0;
-            width: 55px; /* Fixed width keeps names aligned */
+            width: 50px; 
             text-overflow: ellipsis;
             overflow: hidden;
         }
@@ -52,6 +52,7 @@
             font-weight: 500; 
             overflow: hidden; 
             text-overflow: ellipsis; 
+            flex-shrink: 1;
         }
 
         .contact-title { 
@@ -59,32 +60,19 @@
             color: var(--gray); 
             overflow: hidden; 
             text-overflow: ellipsis;
+            font-style: italic;
         }
 
-        /* Compact Call Button */
-        .call-btn { 
+        /* Clickable Phone Number Styling */
+        .phone-link { 
+            font-size: 0.85rem; 
             color: var(--blue); 
             text-decoration: none; 
-            font-size: 0.8rem; 
-            font-weight: 700; 
-            padding: 4px 8px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            white-space: nowrap;
-        }
-
-        .call-icon {
-            background: var(--blue);
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            text-decoration: none;
+            font-weight: 700;
             flex-shrink: 0;
+            width: 100px;
+            text-align: right;
+            padding: 5px 0;
         }
 
         .chevron::after { content: '▼'; font-size: 0.5rem; color: var(--gray); }
@@ -96,7 +84,7 @@
 
 <header><h1>MRA Directory</h1></header>
 <div class="search-container"><input type="text" id="searchInput" placeholder="Search..." onkeyup="filterList()"></div>
-<div id="directory"><div id="loading">Loading...</div></div>
+<div id="directory"><div id="loading">Syncing Spreadsheet...</div></div>
 
 <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?output=csv';
@@ -145,7 +133,7 @@
                             <span class="contact-name">${c.name}</span>
                             <span class="contact-title">${c.title}</span>
                         </div>
-                        <a href="tel:${dial}" class="call-icon">📞</a>
+                        <a href="tel:${dial}" class="phone-link">${c.phone}</a>
                     </div>`;
             });
             section.appendChild(header);
