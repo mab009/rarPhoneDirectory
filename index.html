@@ -23,7 +23,10 @@
         .contact-info { flex: 1; min-width: 0; }
         .dept-label { font-size: 0.7rem; color: var(--blue); text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
         .contact-name { font-size: 0.95rem; font-weight: 500; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .phone-sub { font-size: 0.85rem; color: var(--gray); margin-top: 2px; }
+        
+        /* New Clickable Phone Link Style */
+        .phone-link { font-size: 0.9rem; color: var(--blue); text-decoration: none; display: inline-block; margin-top: 4px; font-weight: 500; }
+        .phone-link:hover { text-decoration: underline; }
 
         .call-circle { background: var(--blue); color: white; text-decoration: none; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; margin-left: 12px; box-shadow: 0 2px 4px rgba(26,115,232,0.3); }
         
@@ -34,28 +37,26 @@
 </head>
 <body>
 
-<header><h1>MRA Phone Directory</h1></header>
+<header><h1>RAR Phone Directory</h1></header>
 <div class="search-container"><input type="text" id="searchInput" placeholder="Search..." onkeyup="filterList()"></div>
 <div id="directory"><div id="loading">Connecting to Directory...</div></div>
 
 <script>
-    // 1. PLACE YOUR PUBLISHED CSV LINK HERE
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?output=csv';
 
     async function init() {
         try {
             const resp = await fetch(csvUrl);
             const text = await resp.text();
-            const rows = text.split(/\r?\n/).slice(1); // Split by newline and skip header
+            const rows = text.split(/\r?\n/).slice(1); 
             
             const grouped = {};
             rows.forEach(row => {
-                // Better CSV splitting logic
                 const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (cols.length < 4 || cols[0].includes('{')) return; // Safety check to ignore code snippets
+                if (cols.length < 4 || cols[0].includes('{')) return; 
 
                 const [loc, dept, name, phone] = cols.map(c => c.replace(/^"|"$/g, '').trim());
-                if (!loc) return; // Skip empty rows
+                if (!loc || !name) return; 
 
                 if (!grouped[loc]) grouped[loc] = [];
                 grouped[loc].push({ dept, name, phone });
@@ -88,41 +89,10 @@
                         <div class="contact-info">
                             <div class="dept-label">${c.dept}</div>
                             <p class="contact-name">${c.name}</p>
-                            <div class="phone-sub">${c.phone}</div>
+                            <a href="tel:${dial}" class="phone-link">Call - ${c.phone}</a>
                         </div>
                         <a href="tel:${dial}" class="call-circle">📞</a>
                     </div>`;
             });
 
-            section.appendChild(header);
-            section.appendChild(content);
-            container.appendChild(section);
-        });
-    }
-
-    function toggle(el) {
-        el.classList.toggle('active');
-        const panel = el.nextElementSibling;
-        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function filterList() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
-        document.querySelectorAll('.location-section').forEach(s => {
-            let match = false;
-            s.querySelectorAll('.contact-row').forEach(r => {
-                const hit = r.getAttribute('data-search').toLowerCase().includes(q);
-                r.style.display = hit ? 'flex' : 'none';
-                if(hit) match = true;
-            });
-            s.style.display = (q === "" || match) ? 'block' : 'none';
-            if(q !== "" && match) {
-                s.querySelector('.location-header').classList.add('active');
-                s.querySelector('.location-content').style.display = 'block';
-            }
-        });
-    }
-    init();
-</script>
-</body>
-</html>
+            section
