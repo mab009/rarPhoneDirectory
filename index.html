@@ -3,43 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MRA Directory</title>
+    <title>MRA Directory Compact</title>
     <style>
-        :root { --dark: #3c4043; --blue: #1a73e8; --gray: #70757a; --border: #dadce0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: var(--dark); -webkit-tap-highlight-color: transparent; }
+        :root { --dark: #3c4043; --blue: #1a73e8; --gray: #70757a; --border: #dadce0; --light-bg: #f8f9fa; }
+        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 0; background: #fff; color: var(--dark); -webkit-tap-highlight-color: transparent; }
         
-        header { background: var(--dark); color: white; padding: 12px; text-align: center; position: sticky; top: 0; z-index: 1000; }
-        header h1 { margin: 0; font-size: 1.1rem; font-weight: 500; }
+        header { background: var(--dark); color: white; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 1000; }
+        header h1 { margin: 0; font-size: 1rem; font-weight: 500; }
 
-        .search-container { padding: 8px 12px; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 41px; z-index: 999; }
-        #searchInput { width: 100%; padding: 10px 16px; border-radius: 20px; border: 1px solid var(--border); font-size: 16px; outline: none; box-sizing: border-box; }
+        .search-container { padding: 6px 10px; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 37px; z-index: 999; }
+        #searchInput { width: 100%; padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border); font-size: 14px; outline: none; box-sizing: border-box; }
 
         .location-section { border-bottom: 1px solid var(--border); }
-        .location-header { background: #f8f9fa; padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 600; border-bottom: 1px solid var(--border); }
+        .location-header { background: var(--light-bg); padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; align-items: center; }
         
         .location-content { display: none; }
-        .contact-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f1f3f4; }
-        .contact-row:active { background-color: #f8f9fa; }
         
-        .contact-info { flex: 1; min-width: 0; }
-        .dept-label { font-size: 0.75rem; color: var(--blue); text-transform: uppercase; font-weight: 700; margin-bottom: 3px; letter-spacing: 0.5px; }
-        .contact-name { font-size: 1rem; font-weight: 500; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .contact-title { font-size: 0.85rem; color: var(--gray); font-style: italic; margin: 2px 0; }
+        /* One-Line Row Design */
+        .contact-row { 
+            display: flex; 
+            align-items: center; 
+            padding: 6px 12px; 
+            border-bottom: 1px solid #f1f3f4; 
+            gap: 8px;
+        }
 
-        .phone-link { font-size: 0.95rem; color: var(--blue); text-decoration: none; display: inline-block; margin-top: 8px; font-weight: 600; padding: 5px 0; }
-        
-        .call-circle { background: var(--blue); color: white; text-decoration: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; margin-left: 15px; box-shadow: 0 2px 6px rgba(26,115,232,0.3); }
-        
-        .chevron::after { content: '▼'; font-size: 0.65rem; color: var(--gray); }
+        .contact-info { 
+            flex: 1; 
+            display: flex; 
+            align-items: baseline; 
+            overflow: hidden; 
+            white-space: nowrap; 
+            gap: 6px;
+        }
+
+        .dept-label { 
+            font-size: 0.65rem; 
+            color: var(--blue); 
+            font-weight: 800; 
+            flex-shrink: 0;
+            width: 55px; /* Fixed width keeps names aligned */
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .contact-name { 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+
+        .contact-title { 
+            font-size: 0.75rem; 
+            color: var(--gray); 
+            overflow: hidden; 
+            text-overflow: ellipsis;
+        }
+
+        /* Compact Call Button */
+        .call-btn { 
+            color: var(--blue); 
+            text-decoration: none; 
+            font-size: 0.8rem; 
+            font-weight: 700; 
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .call-icon {
+            background: var(--blue);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .chevron::after { content: '▼'; font-size: 0.5rem; color: var(--gray); }
         .active .chevron::after { content: '▲'; }
-        #loading { text-align: center; padding: 40px; color: var(--gray); font-size: 0.95rem; }
+        #loading { text-align: center; padding: 20px; color: var(--gray); font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
-<header><h1>MRA Phone Directory</h1></header>
-<div class="search-container"><input type="text" id="searchInput" placeholder="Search names, titles, or depts..." onkeyup="filterList()"></div>
-<div id="directory"><div id="loading">Connecting to Directory...</div></div>
+<header><h1>MRA Directory</h1></header>
+<div class="search-container"><input type="text" id="searchInput" placeholder="Search..." onkeyup="filterList()"></div>
+<div id="directory"><div id="loading">Loading...</div></div>
 
 <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?output=csv';
@@ -49,21 +106,18 @@
             const resp = await fetch(csvUrl);
             const text = await resp.text();
             const rows = text.split(/\r?\n/).slice(1); 
-            
             const grouped = {};
+            
             rows.forEach(row => {
                 const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 if (cols.length < 5 || cols[0].includes('{')) return; 
-
                 const [loc, dept, name, title, phone] = cols.map(c => c.replace(/^"|"$/g, '').trim());
                 if (!loc || !name) return; 
-
                 if (!grouped[loc]) grouped[loc] = [];
                 grouped[loc].push({ dept, name, title, phone });
             });
-
             render(grouped);
-        } catch (e) { document.getElementById('loading').innerHTML = "Error loading data."; }
+        } catch (e) { document.getElementById('loading').innerHTML = "Check CSV Link"; }
     }
 
     function render(data) {
@@ -84,19 +138,16 @@
 
             data[loc].sort((a,b) => a.dept.localeCompare(b.dept)).forEach(c => {
                 const dial = c.phone.replace(/\D/g, '');
-
                 content.innerHTML += `
                     <div class="contact-row" data-search="${c.name} ${c.dept} ${c.title}">
                         <div class="contact-info">
-                            <div class="dept-label">${c.dept}</div>
-                            <p class="contact-name">${c.name}</p>
-                            <p class="contact-title">${c.title}</p>
-                            <a href="tel:${dial}" class="phone-link">Call - ${c.phone}</a>
+                            <span class="dept-label">${c.dept}</span>
+                            <span class="contact-name">${c.name}</span>
+                            <span class="contact-title">${c.title}</span>
                         </div>
-                        <a href="tel:${dial}" class="call-circle">📞</a>
+                        <a href="tel:${dial}" class="call-icon">📞</a>
                     </div>`;
             });
-
             section.appendChild(header);
             section.appendChild(content);
             container.appendChild(section);
