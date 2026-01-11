@@ -3,68 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Medical Directory</title>
+    <title>MRA Medical Directory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        /* (Styles remain the same as the previous example) */
-        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
-        .container { max-width: 600px; margin: auto; }
-        #searchInput { width: 100%; padding: 12px; margin-bottom: 20px; }
-        .contact-card { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .call-btn { background: #3498db; color: white; text-decoration: none; padding: 10px; border-radius: 5px; }
-        .category-tag { font-size: 0.8em; color: #666; text-transform: uppercase; }
+        :root {
+            --google-charcoal: #3c4043;
+            --google-blue: #1a73e8;
+            --google-bg: #ffffff;
+            --border-color: #dadce0;
+            --text-gray: #5f6368;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--google-bg);
+            color: var(--google-charcoal);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--google-charcoal);
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-weight: 300;
+            font-size: 2.5rem;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: -28px auto 30px;
+            padding: 0 20px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 16px 25px;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: box-shadow 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: var(--google-blue);
+        }
+
+        .category-tag {
+            color: var(--google-blue);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .card h3 {
+            margin: 0 0 12px 0;
+            font-size: 1.4rem;
+            font-weight: 400;
+        }
+
+        .card p {
+            margin: 4px 0;
+            font-size: 0.95rem;
+            color: var(--text-gray);
+        }
+
+        .btn-group {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .btn-call {
+            background-color: var(--google-blue);
+            color: white;
+        }
+
+        .btn-map {
+            border: 1px solid var(--border-color);
+            color: var(--google-blue);
+        }
+
+        #loading {
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 50px;
+            color: var(--text-gray);
+        }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; }
+            .container { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Medical Directory</h1>
-    <input type="text" id="searchInput" placeholder="Search names or locations..." onkeyup="filterList()">
-    <div id="directoryList">Loading contacts...</div>
+<header>
+    <h1>MRA Medical Directory</h1>
+</header>
+
+<div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search by name, category, or city..." onkeyup="filterList()">
+</div>
+
+<div class="container" id="directory">
+    <div id="loading">Loading directory data...</div>
 </div>
 
 <script>
-    // PASTE YOUR PUBLISHED CSV LINK HERE
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?output=csv';
+    // 1. PASTE YOUR GOOGLE SHEETS PUBLISHED CSV URL BELOW
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?output=csv';
 
-    async function loadDirectory() {
-        const response = await fetch(sheetUrl);
-        const data = await response.text();
-        const rows = data.split('\n').slice(1); // Skip the header row
-        
-        const listContainer = document.getElementById('directoryList');
-        listContainer.innerHTML = '';
+    async function fetchData() {
+        try {
+            const response = await fetch(csvUrl);
+            const data = await response.text();
+            
+            // Clean up CSV data and split into rows
+            const rows = data.split('\n').slice(1); 
+            const directoryContainer = document.getElementById('directory');
+            directoryContainer.innerHTML = ''; // Clear loading message
 
-        rows.forEach(row => {
-            const columns = row.split(',');
-            if (columns.length < 4) return; // Skip empty rows
+            rows.forEach(row => {
+                // Split by comma but handle potential quotes in CSV
+                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (cols.length < 4) return;
 
-            const [name, category, desc, phone, location] = columns;
-            const cleanPhone = phone.replace(/\D/g,''); // Removes dashes for the tel: link
+                const [name, category, desc, phone, location] = cols.map(c => c.replace(/^"|"$/g, '').trim());
+                const dialPhone = phone.replace(/\D/g, '');
 
-            const card = `
-                <div class="contact-card" data-search="${name} ${location} ${category}">
-                    <div>
-                        <span class="category-tag">${category}</span>
-                        <h3 style="margin:5px 0">${name}</h3>
-                        <p style="margin:0; font-size: 0.9em; color: #555;">${desc} - ${location}</p>
+                const cardHtml = `
+                    <div class="card" data-search="${name} ${category} ${location}">
+                        <div>
+                            <div class="category-tag">${category}</div>
+                            <h3>${name}</h3>
+                            <p><strong>Info:</strong> ${desc}</p>
+                            <p><strong>Loc:</strong> ${location}</p>
+                            <p><strong>Phone:</strong> ${phone}</p>
+                        </div>
+                        <div class="btn-group">
+                            <a href="tel:${dialPhone}" class="btn btn-call">CALL</a>
+                            <a href="https://www.google.com/maps/search/${encodeURIComponent(name + ' ' + location)}" target="_blank" class="btn btn-map">MAP</a>
+                        </div>
                     </div>
-                    <a href="tel:${cleanPhone}" class="call-btn">📞 Call</a>
-                </div>
-            `;
-            listContainer.innerHTML += card;
-        });
+                `;
+                directoryContainer.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        } catch (error) {
+            document.getElementById('loading').innerHTML = "Error loading data. Check CSV link.";
+            console.error(error);
+        }
     }
 
     function filterList() {
-        const input = document.getElementById('searchInput').value.toLowerCase();
-        const cards = document.getElementsByClassName('contact-card');
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const cards = document.getElementsByClassName('card');
         Array.from(cards).forEach(card => {
-            const text = card.getAttribute('data-search').toLowerCase();
-            card.style.display = text.includes(input) ? "flex" : "none";
+            const searchable = card.getAttribute('data-search').toLowerCase();
+            card.style.display = searchable.includes(query) ? 'flex' : 'none';
         });
     }
 
-    loadDirectory();
+    fetchData();
 </script>
+
 </body>
 </html>
