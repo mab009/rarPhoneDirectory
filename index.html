@@ -3,147 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MRA Organized Directory</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <title>MRA Directory Compact</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --google-charcoal: #3c4043;
             --google-blue: #1a73e8;
-            --google-bg: #ffffff;
             --border-color: #dadce0;
-            --text-gray: #5f6368;
         }
 
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: var(--google-bg);
+            background-color: #fff;
             color: var(--google-charcoal);
             margin: 0; padding: 0;
+            line-height: 1.2;
         }
 
+        /* Compact Header */
         header {
             background-color: var(--google-charcoal);
             color: white;
-            padding: 30px 20px;
+            padding: 15px;
             text-align: center;
         }
-
-        header h1 { margin: 0; font-weight: 300; font-size: 2rem; }
+        header h1 { margin: 0; font-size: 1.2rem; font-weight: 400; }
 
         .search-container {
-            max-width: 500px;
-            margin: -25px auto 30px;
-            padding: 0 20px;
             position: sticky;
-            top: 10px;
+            top: 0;
+            background: white;
+            padding: 10px;
             z-index: 100;
+            border-bottom: 1px solid var(--border-color);
         }
 
         #searchInput {
             width: 100%;
-            padding: 14px 20px;
-            border-radius: 25px;
+            padding: 10px 15px;
+            border-radius: 20px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-size: 14px;
             outline: none;
             box-sizing: border-box;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 20px 50px;
-        }
+        .container { padding: 0; }
 
-        /* Collapsible Section Styling */
-        .location-section {
-            margin-bottom: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-        }
+        /* Compact Sections */
+        .location-section { border-bottom: 1px solid var(--border-color); }
 
         .location-header {
-            background-color: #f8f9fa;
-            padding: 15px 20px;
+            background-color: #f1f3f4;
+            padding: 8px 15px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            font-size: 0.9rem;
             font-weight: 500;
-            user-select: none;
-            border-bottom: 1px solid transparent;
-        }
-
-        .location-header:hover { background-color: #f1f3f4; }
-
-        .location-header.active {
-            border-bottom: 1px solid var(--border-color);
-            color: var(--google-blue);
         }
 
         .location-content {
             display: none;
-            padding: 15px;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
             background: #fff;
         }
 
-        /* Card Styling */
-        .card {
-            border: 1px solid #eee;
-            border-radius: 6px;
-            padding: 15px;
+        /* Compact Rows */
+        .contact-row {
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
+            align-items: center;
+            padding: 8px 15px;
+            border-bottom: 1px solid #f8f9fa;
         }
 
-        .dept-tag {
-            color: var(--text-gray);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: 600;
+        .contact-info { flex-grow: 1; overflow: hidden; }
+        
+        .dept-label { 
+            font-size: 0.7rem; 
+            color: var(--google-blue); 
+            text-transform: uppercase; 
+            font-weight: 500;
         }
 
-        .card h3 { margin: 5px 0; font-size: 1.1rem; }
+        .contact-name { 
+            font-size: 0.95rem; 
+            margin: 2px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
+        .phone-text { font-size: 0.8rem; color: #70757a; }
+
+        /* Compact Call Button */
         .btn-call {
             background-color: var(--google-blue);
             color: white;
-            text-align: center;
-            padding: 10px;
-            border-radius: 4px;
             text-decoration: none;
-            font-weight: 500;
-            margin-top: 10px;
-            font-size: 0.9rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-left: 10px;
+            font-size: 1.2rem;
         }
 
-        #loading { text-align: center; padding: 50px; color: var(--text-gray); }
-
-        .chevron::after { content: '▼'; font-size: 0.8rem; color: #999; }
+        .chevron::after { content: '▼'; font-size: 0.7rem; color: #70757a; }
         .active .chevron::after { content: '▲'; }
+        
+        #loading { text-align: center; padding: 20px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>MRA Phone Directory</h1>
-</header>
+<header><h1>MRA Phone Directory</h1></header>
 
 <div class="search-container">
-    <input type="text" id="searchInput" placeholder="Search names or departments..." onkeyup="filterList()">
+    <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterList()">
 </div>
 
 <div class="container" id="directory">
-    <div id="loading">Organizing directory...</div>
+    <div id="loading">Loading...</div>
 </div>
 
 <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?output=csv';
+    const csvUrl = 'YOUR_PUBLISHED_CSV_LINK_HERE';
 
     async function fetchData() {
         try {
@@ -151,30 +140,24 @@
             const data = await response.text();
             const rows = data.split('\n').slice(1); 
             
-            // 1. Group Data by Location
             const grouped = {};
             rows.forEach(row => {
                 const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 if (cols.length < 4) return;
                 const [loc, dept, name, phone] = cols.map(c => c.replace(/^"|"$/g, '').trim());
-                
                 if (!grouped[loc]) grouped[loc] = [];
                 grouped[loc].push({ dept, name, phone });
             });
 
-            // 2. Sort Locations and Departments
-            const sortedLocations = Object.keys(grouped).sort();
             const directoryContainer = document.getElementById('directory');
             directoryContainer.innerHTML = ''; 
 
-            // 3. Build HTML
-            sortedLocations.forEach(loc => {
+            Object.keys(grouped).sort().forEach(loc => {
                 const contacts = grouped[loc].sort((a, b) => a.dept.localeCompare(b.dept));
-                
                 let sectionHtml = `
-                    <div class="location-section" data-loc-name="${loc.toLowerCase()}">
+                    <div class="location-section">
                         <div class="location-header" onclick="toggleSection(this)">
-                            <span>${loc} (${contacts.length})</span>
+                            <span>${loc}</span>
                             <span class="chevron"></span>
                         </div>
                         <div class="location-content">
@@ -183,70 +166,47 @@
                 contacts.forEach(c => {
                     const dial = c.phone.replace(/\D/g, '');
                     sectionHtml += `
-                        <div class="card" data-search="${c.name} ${c.dept}">
-                            <div>
-                                <div class="dept-tag">${c.dept}</div>
-                                <h3>${c.name}</h3>
-                                <div style="font-size:0.9rem">${c.phone}</div>
+                        <div class="contact-row" data-search="${c.name} ${c.dept}">
+                            <div class="contact-info">
+                                <div class="dept-label">${c.dept}</div>
+                                <div class="contact-name">${c.name}</div>
+                                <div class="phone-text">${c.phone}</div>
                             </div>
-                            <a href="tel:${dial}" class="btn-call">CALL</a>
+                            <a href="tel:${dial}" class="btn-call">📞</a>
                         </div>
                     `;
                 });
-
                 sectionHtml += `</div></div>`;
                 directoryContainer.insertAdjacentHTML('beforeend', sectionHtml);
             });
-
-        } catch (error) {
-            document.getElementById('loading').innerHTML = "Error loading spreadsheet.";
-        }
+        } catch (e) { document.getElementById('loading').innerText = "Load Error"; }
     }
 
     function toggleSection(header) {
         header.classList.toggle('active');
         const content = header.nextElementSibling;
-        content.style.display = content.style.display === 'grid' ? 'none' : 'grid';
+        content.style.display = content.style.display === 'block' ? 'none' : 'block';
     }
 
     function filterList() {
         const query = document.getElementById('searchInput').value.toLowerCase();
-        const sections = document.querySelectorAll('.location-section');
-
-        sections.forEach(section => {
-            const cards = section.querySelectorAll('.card');
-            const header = section.querySelector('.location-header');
-            const content = section.querySelector('.location-content');
-            let hasMatch = false;
-
-            cards.forEach(card => {
-                const text = card.getAttribute('data-search').toLowerCase();
-                if (text.includes(query)) {
-                    card.style.display = 'flex';
-                    hasMatch = true;
-                } else {
-                    card.style.display = 'none';
-                }
+        document.querySelectorAll('.location-section').forEach(section => {
+            const rows = section.querySelectorAll('.contact-row');
+            let match = false;
+            rows.forEach(row => {
+                const text = row.getAttribute('data-search').toLowerCase();
+                const isMatch = text.includes(query);
+                row.style.display = isMatch ? 'flex' : 'none';
+                if(isMatch) match = true;
             });
-
-            // Behavior: Auto-expand location if a match is found
-            if (query.length > 0 && hasMatch) {
-                section.style.display = 'block';
-                header.classList.add('active');
-                content.style.display = 'grid';
-            } else if (query.length > 0 && !hasMatch) {
-                section.style.display = 'none';
-            } else {
-                // Reset to collapsed when search is empty
-                section.style.display = 'block';
-                header.classList.remove('active');
-                content.style.display = 'none';
+            section.style.display = (query === "" || match) ? 'block' : 'none';
+            if(query !== "" && match) {
+                section.querySelector('.location-header').classList.add('active');
+                section.querySelector('.location-content').style.display = 'block';
             }
         });
     }
-
     fetchData();
 </script>
-
 </body>
 </html>
