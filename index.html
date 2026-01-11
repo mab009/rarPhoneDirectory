@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MRA Directory Compact</title>
+    <title>MRA Comprehensive Directory</title>
     <style>
         :root { --dark: #3c4043; --blue: #1a73e8; --gray: #70757a; --border: #dadce0; --light-bg: #f8f9fa; }
         body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 0; background: #fff; color: var(--dark); -webkit-tap-highlight-color: transparent; }
@@ -19,7 +19,7 @@
         
         .location-content { display: none; }
         
-        /* Grid Layout: Name takes all space (1fr), Phone is fixed (125px) */
+        /* Grid Layout: Name takes 1fr, Phone is fixed 125px */
         .contact-row { 
             display: grid;
             grid-template-columns: 1fr 125px; 
@@ -34,8 +34,8 @@
             font-weight: 500; 
             overflow: hidden; 
             text-overflow: ellipsis; 
-            white-space: nowrap; /* Prevents name from wrapping */
-            min-width: 0; /* Required for ellipsis to work in grid */
+            white-space: nowrap;
+            min-width: 0; 
         }
 
         .phone-link { 
@@ -43,7 +43,7 @@
             color: var(--blue); 
             text-decoration: none; 
             font-weight: 700;
-            white-space: nowrap; /* Absolute no-wrap for number */
+            white-space: nowrap;
             text-align: right;
             padding: 5px 0;
             display: block;
@@ -57,7 +57,7 @@
 <body>
 
 <header><h1>MRA Phone Directory</h1></header>
-<div class="search-container"><input type="text" id="searchInput" placeholder="Search..." onkeyup="filterList()"></div>
+<div class="search-container"><input type="text" id="searchInput" placeholder="Search names, depts, or phones..." onkeyup="filterList()"></div>
 <div id="directory"><div id="loading">Syncing Spreadsheet...</div></div>
 
 <script>
@@ -77,7 +77,7 @@
                 if (!loc || !phone) return; 
 
                 if (!grouped[loc]) grouped[loc] = [];
-                grouped[loc].push({ mainText, phone });
+                grouped[loc].push({ loc, mainText, phone });
             });
             render(grouped);
         } catch (e) { document.getElementById('loading').innerHTML = "Check CSV Link Settings"; }
@@ -102,8 +102,9 @@
             data[loc].sort((a,b) => (a.mainText || "").localeCompare(b.mainText || "")).forEach(c => {
                 const dial = c.phone.replace(/\D/g, '');
                 
+                // data-search now includes location, text, and phone for 100% coverage
                 content.innerHTML += `
-                    <div class="contact-row" data-search="${c.mainText}">
+                    <div class="contact-row" data-search="${c.loc} ${c.mainText} ${c.phone}">
                         <span class="display-text">${c.mainText || "No Name Provided"}</span>
                         <a href="tel:${dial}" class="phone-link">${c.phone}</a>
                     </div>`;
@@ -126,13 +127,21 @@
             let match = false;
             s.querySelectorAll('.contact-row').forEach(r => {
                 const hit = r.getAttribute('data-search').toLowerCase().includes(q);
-                r.style.display = hit ? 'grid' : 'none'; // Changed to 'grid' to maintain layout
+                r.style.display = hit ? 'grid' : 'none'; 
                 if(hit) match = true;
             });
+            
+            // If searching, hide empty sections. If not searching, reset to block.
             s.style.display = (q === "" || match) ? 'block' : 'none';
+            
+            // Auto-expand sections that have matches while searching
             if(q !== "" && match) {
                 s.querySelector('.location-header').classList.add('active');
                 s.querySelector('.location-content').style.display = 'block';
+            } else if (q === "") {
+                // Collapses all when search is cleared for a clean view
+                s.querySelector('.location-header').classList.remove('active');
+                s.querySelector('.location-content').style.display = 'none';
             }
         });
     }
