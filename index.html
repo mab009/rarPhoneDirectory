@@ -15,16 +15,16 @@
         #searchInput { width: 100%; padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border); font-size: 14px; outline: none; box-sizing: border-box; }
 
         .location-section { border-bottom: 1px solid var(--border); }
-        .location-header { background: var(--light-bg); padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; align-items: center; }
+        .location-header { background: var(--light-bg); padding: 10px 12px; cursor: pointer; display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 700; align-items: center; border-bottom: 1px solid var(--border); }
         
         .location-content { display: none; }
         
         .contact-row { 
             display: flex; 
             align-items: center; 
-            padding: 8px 12px; 
+            padding: 10px 12px; 
             border-bottom: 1px solid #f1f3f4; 
-            gap: 10px;
+            gap: 12px;
         }
 
         .contact-info { 
@@ -33,47 +33,29 @@
             align-items: baseline; 
             overflow: hidden; 
             white-space: nowrap; 
-            gap: 8px;
         }
 
-        .dept-label { 
-            font-size: 0.65rem; 
-            color: var(--blue); 
-            font-weight: 800; 
-            flex-shrink: 0;
-            width: 50px; 
-            text-overflow: ellipsis;
-            overflow: hidden;
-        }
-
+        /* Location name now has much more space */
         .contact-name { 
-            font-size: 0.9rem; 
+            font-size: 1rem; 
             font-weight: 500; 
             overflow: hidden; 
             text-overflow: ellipsis; 
-            flex-shrink: 1;
-        }
-
-        .contact-title { 
-            font-size: 0.75rem; 
-            color: var(--gray); 
-            overflow: hidden; 
-            text-overflow: ellipsis;
-            font-style: italic;
+            flex: 1;
         }
 
         .phone-link { 
-            font-size: 0.85rem; 
+            font-size: 0.95rem; 
             color: var(--blue); 
             text-decoration: none; 
             font-weight: 700;
             flex-shrink: 0;
-            width: 100px;
+            width: 110px;
             text-align: right;
             padding: 5px 0;
         }
 
-        .chevron::after { content: '▼'; font-size: 0.5rem; color: var(--gray); }
+        .chevron::after { content: '▼'; font-size: 0.6rem; color: var(--gray); }
         .active .chevron::after { content: '▲'; }
         #loading { text-align: center; padding: 20px; color: var(--gray); font-size: 0.85rem; }
     </style>
@@ -81,7 +63,7 @@
 <body>
 
 <header><h1>MRA Directory</h1></header>
-<div class="search-container"><input type="text" id="searchInput" placeholder="Search..." onkeyup="filterList()"></div>
+<div class="search-container"><input type="text" id="searchInput" placeholder="Search by name..." onkeyup="filterList()"></div>
 <div id="directory"><div id="loading">Syncing Spreadsheet...</div></div>
 
 <script>
@@ -98,10 +80,10 @@
                 const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 if (cols.length < 5 || cols[0].includes('{')) return; 
                 
-                // Use default empty strings for blank columns
+                // Map columns: 0:Location, 1:Dept, 2:Name, 3:Title, 4:Phone
                 const [loc, dept, name, title, phone] = cols.map(c => c ? c.replace(/^"|"$/g, '').trim() : "");
                 
-                // We still need at least a Location and a Phone to make the entry useful
+                // Still checking all searchable fields in background for filter logic
                 if (!loc || !phone) return; 
 
                 if (!grouped[loc]) grouped[loc] = [];
@@ -127,20 +109,17 @@
             const content = document.createElement('div');
             content.className = 'location-content';
 
-            data[loc].sort((a,b) => (a.dept || "").localeCompare(b.dept || "")).forEach(c => {
+            // Sorting by Name (Column 3) within the location group
+            data[loc].sort((a,b) => (a.name || "").localeCompare(b.name || "")).forEach(c => {
                 const dial = c.phone.replace(/\D/g, '');
                 
-                // Only build tags if data exists
-                const deptTag = c.dept ? `<span class="dept-label">${c.dept}</span>` : `<span class="dept-label"></span>`;
-                const nameTag = c.name ? `<span class="contact-name">${c.name}</span>` : '';
-                const titleTag = c.title ? `<span class="contact-title">${c.title}</span>` : '';
+                // Only show Name (Col 3) and Phone (Col 5)
+                const nameDisplay = c.name ? `<span class="contact-name">${c.name}</span>` : `<span class="contact-name" style="color:#ccc">Unnamed Entry</span>`;
 
                 content.innerHTML += `
                     <div class="contact-row" data-search="${c.name} ${c.dept} ${c.title}">
                         <div class="contact-info">
-                            ${deptTag}
-                            ${nameTag}
-                            ${titleTag}
+                            ${nameDisplay}
                         </div>
                         <a href="tel:${dial}" class="phone-link">${c.phone}</a>
                     </div>`;
