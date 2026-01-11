@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MRA Directory</title>
+    <title>RAR Directory</title>
     <style>
         :root { --dark: #3c4043; --blue: #1a73e8; --gray: #70757a; --border: #dadce0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: var(--dark); }
@@ -24,10 +24,10 @@
         .dept-label { font-size: 0.7rem; color: var(--blue); text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
         .contact-name { font-size: 0.95rem; font-weight: 500; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        /* New Clickable Phone Link Style */
-        .phone-link { font-size: 0.9rem; color: var(--blue); text-decoration: none; display: inline-block; margin-top: 4px; font-weight: 500; }
-        .phone-link:hover { text-decoration: underline; }
+        /* New Title Style */
+        .contact-title { font-size: 0.8rem; color: var(--gray); font-style: italic; margin: 1px 0; }
 
+        .phone-link { font-size: 0.9rem; color: var(--blue); text-decoration: none; display: inline-block; margin-top: 4px; font-weight: 500; }
         .call-circle { background: var(--blue); color: white; text-decoration: none; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; margin-left: 12px; box-shadow: 0 2px 4px rgba(26,115,232,0.3); }
         
         .chevron::after { content: '▼'; font-size: 0.6rem; color: var(--gray); }
@@ -37,12 +37,12 @@
 </head>
 <body>
 
-<header><h1>MRA Phone Directory</h1></header>
-<div class="search-container"><input type="text" id="searchInput" placeholder="Search..." onkeyup="filterList()"></div>
+<header><h1>RAR Phone Directory</h1></header>
+<div class="search-container"><input type="text" id="searchInput" placeholder="Search names, titles, or depts..." onkeyup="filterList()"></div>
 <div id="directory"><div id="loading">Connecting to Directory...</div></div>
 
 <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?gid=1696549759&single=true&output=csv';
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?output=csv';
 
     async function init() {
         try {
@@ -53,13 +53,14 @@
             const grouped = {};
             rows.forEach(row => {
                 const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (cols.length < 4 || cols[0].includes('{')) return; 
+                // Safety check for 5 columns
+                if (cols.length < 5 || cols[0].includes('{')) return; 
 
-                const [loc, dept, name, phone] = cols.map(c => c.replace(/^"|"$/g, '').trim());
+                const [loc, dept, name, title, phone] = cols.map(c => c.replace(/^"|"$/g, '').trim());
                 if (!loc || !name) return; 
 
                 if (!grouped[loc]) grouped[loc] = [];
-                grouped[loc].push({ dept, name, phone });
+                grouped[loc].push({ dept, name, title, phone });
             });
 
             render(grouped);
@@ -85,10 +86,11 @@
             data[loc].sort((a,b) => a.dept.localeCompare(b.dept)).forEach(c => {
                 const dial = c.phone.replace(/\D/g, '');
                 content.innerHTML += `
-                    <div class="contact-row" data-search="${c.name} ${c.dept}">
+                    <div class="contact-row" data-search="${c.name} ${c.dept} ${c.title}">
                         <div class="contact-info">
                             <div class="dept-label">${c.dept}</div>
                             <p class="contact-name">${c.name}</p>
+                            <p class="contact-title">${c.title}</p>
                             <a href="tel:${dial}" class="phone-link">Call - ${c.phone}</a>
                         </div>
                         <a href="tel:${dial}" class="call-circle">📞</a>
