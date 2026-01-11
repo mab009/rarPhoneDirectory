@@ -85,19 +85,33 @@
             data[loc].sort((a,b) => a.dept.localeCompare(b.dept)).forEach(c => {
                 const dial = c.phone.replace(/\D/g, '');
                 
-                // We use both href and onclick to ensure iOS recognizes human intent
-                const callAction = `window.location.href='tel:${dial}'; return false;`;
+                // This function forces a UI 'interruption' that Safari requires to reset its block
+                const safeCall = (e) => {
+                    e.preventDefault();
+                    if (confirm(`Call ${c.name} at ${c.phone}?`)) {
+                        window.location.href = `tel:${dial}`;
+                    }
+                };
 
-                content.innerHTML += `
-                    <div class="contact-row" data-search="${c.name} ${c.dept} ${c.title}">
-                        <div class="contact-info">
-                            <div class="dept-label">${c.dept}</div>
-                            <p class="contact-name">${c.name}</p>
-                            <p class="contact-title">${c.title}</p>
-                            <a href="tel:${dial}" onclick="${callAction}" class="phone-link">Call - ${c.phone}</a>
-                        </div>
-                        <a href="tel:${dial}" onclick="${callAction}" class="call-circle">📞</a>
-                    </div>`;
+                const row = document.createElement('div');
+                row.className = 'contact-row';
+                row.setAttribute('data-search', `${c.name} ${c.dept} ${c.title}`);
+                row.innerHTML = `
+                    <div class="contact-info">
+                        <div class="dept-label">${c.dept}</div>
+                        <p class="contact-name">${c.name}</p>
+                        <p class="contact-title">${c.title}</p>
+                        <a href="#" class="phone-link">Call - ${c.phone}</a>
+                    </div>
+                    <a href="#" class="call-circle">📞</a>
+                `;
+
+                // Attach the safeCall handler to both the link and the button
+                row.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', safeCall);
+                });
+
+                content.appendChild(row);
             });
 
             section.appendChild(header);
