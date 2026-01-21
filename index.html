@@ -74,56 +74,71 @@
         return str ? str.toLowerCase().replace(/[^a-z0-9]/g, '').trim() : "";
     }
 
-    async function init() {
-        try {
-            // 1. Process Synonyms
-            const synResp = await fetch(synonymsUrl);
-            const synText = await synResp.text();
-            const synRows = synText.split(/\r?\n/).filter(line => line.trim().length > 0).slice(1);
-            
-            synRows.forEach(row => {
-                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if(cols.length > 0) {
-                    const official = cols[0].replace(/^"|"$/g, '').trim();
-                    synonymStrings[official] = cols.join(' ').toLowerCase();
-                    cols.forEach(variant => {
-                        const variantClean = cleanStr(variant);
-                        if(variantClean) officialLookup[variantClean] = official;
-                    });
-                }
-            });
+/* --- REPLACING THE INIT FUNCTION FOR MAX CONSOLIDATION --- */
 
-            // 2. Process Directory
-            const resp = await fetch(directoryUrl);
-            const text = await resp.text();
-            const rows = text.split(/\r?\n/).filter(line => line.trim().length > 0).slice(1); 
-            
-            fullData = rows.map(row => {
-                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                const rawLoc = cols[1]?.replace(/^"|"$/g, '').trim() || "Unknown";
+async function init() {
+    try {
+        // 1. Fetch Synonyms
+        const synResp = await fetch(synonymsUrl);
+        const synText = await synResp.text();
+        const synRows = synText.split(/\r?\n/).filter(line => line.trim().length > 0).slice(1);
+        
+        synRows.forEach(row => {
+            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            if(cols.length > 0) {
+                const official = cols[0].replace(/^"|"$/g, '').trim();
+                // We create a "Search String" of all variants for the filter
+                synonymStrings[official] = cols.join(' ').toLowerCase();
                 
-                // Consolidation Match
-                const officialLoc = officialLookup[cleanStr(rawLoc)] || rawLoc;
-                const isConsolidated = !!officialLookup[cleanStr(rawLoc)];
+                // Map EVERY variant in this row to the Official name
+                cols.forEach(variant => {
+                    const cleanVariant = cleanStr(variant);
+                    if(cleanVariant) {
+                        officialLookup[cleanVariant] = official;
+                    }
+                });
+            }
+        });
 
-                if (!debugData.find(d => d.raw === rawLoc)) {
-                    debugData.push({ raw: rawLoc, official: officialLoc, success: isConsolidated });
-                }
+        // 2. Fetch Directory
+        const resp = await fetch(directoryUrl);
+        const text = await resp.text();
+        const rows = text.split(/\r?\n/).filter(line => line.trim().length > 0).slice(1); 
+        
+        fullData = rows.map(row => {
+            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            const rawLoc = cols[1]?.replace(/^"|"$/g, '').trim() || "Unknown";
+            
+            // THE CONSOLIDATOR:
+            // We clean the name from the directory and look it up in our synonym dictionary
+            const matchKey = cleanStr(rawLoc);
+            const officialLoc = officialLookup[matchKey] || rawLoc;
+            
+            const isConsolidated = !!officialLookup[matchKey];
 
-                return {
-                    cat: cols[0]?.replace(/^"|"$/g, '').trim() || "Other",
-                    loc: officialLoc, 
-                    name: cols[2]?.replace(/^"|"$/g, '').trim() || "---",
-                    phone: cols[3]?.replace(/^"|"$/g, '').trim() || "",
-                    email: cols[4]?.replace(/^"|"$/g, '').trim() || ""
-                };
-            }).filter(item => item.phone !== "" || item.email !== "");
+            // Update Debug Data
+            if (!debugData.find(d => d.raw === rawLoc)) {
+                debugData.push({ raw: rawLoc, official: officialLoc, success: isConsolidated });
+            }
 
-            renderTabs();
-            renderDirectory();
-            updateDebugLog();
-        } catch (e) { document.getElementById('debug-log').innerText = "Load Error: " + e; }
+            return {
+                cat: cols[0]?.replace(/^"|"$/g, '').trim() || "Other",
+                loc: officialLoc, 
+                name: cols[2]?.replace(/^"|"$/g, '').trim() || "---",
+                phone: cols[3]?.replace(/^"|"$/g, '').trim() || "",
+                email: cols[4]?.replace(/^"|"$/g, '').trim() || ""
+            };
+        }).filter(item => item.phone !== "" || item.email !== "");
+
+        renderTabs();
+        renderDirectory();
+        updateDebugLog();
+    } catch (e) { 
+        console.error(e);
+        document.getElementById('debug-log').innerText = "Load Error: " + e; 
     }
+}
+
 
     function updateDebugLog() {
         const log = document.getElementById('debug-log');
