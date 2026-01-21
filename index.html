@@ -58,6 +58,14 @@
     const directoryUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?gid=1696549759&single=true&output=csv';
     const synonymsUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?gid=1225631162&single=true&output=csv';
     
+    // ADD ANY NEW CATEGORY NAMES HERE THAT SHOULD HAVE TEXTING ENABLED
+    const smsEnabledCategories = [
+        'radiologists', 
+        'physician assistants', 
+        'nurse practitioners', 
+        'provider'
+    ];
+
     let fullData = [];
     let officialLookup = {}; 
     let synonymStrings = {}; 
@@ -164,8 +172,8 @@
                     ? `<a href="mailto:${c.email}" class="action-icon email-btn" title="Email ${c.name}">✉</a>` 
                     : `<div style="width:36px"></div>`;
                 
-                // ONLY SHOW SMS FOR PROVIDERS
-                const showSms = (c.cat.toLowerCase() === 'provider');
+                // SHOW SMS IF CATEGORY IS IN OUR ENABLED LIST
+                const showSms = smsEnabledCategories.includes(c.cat.toLowerCase());
                 const smsHtml = (c.phone && showSms) 
                     ? `<a href="sms:${dial}" class="action-icon sms-btn" title="Text ${c.phone}">💬</a>` 
                     : `<div style="width:36px"></div>`;
