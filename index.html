@@ -87,28 +87,31 @@
     let synonymStrings = {}; // Maps Official Name -> List of synonyms for search
     let currentCategory = "All";
 
-    async function init() {
+async function init() {
         try {
-            // 1. Process Synonyms for Consolidation
+            // 1. Process Synonyms Sheet
             const synResp = await fetch(synonymsUrl);
             const synText = await synResp.text();
-            const synRows = synText.split(/\r?\n/).slice(1);
+            const synRows = synText.split(/\r?\n/).filter(line => line.trim().length > 0).slice(1);
             
             synRows.forEach(row => {
+                // Handle CSV parsing with quotes
                 const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 if(cols.length > 0) {
                     const official = cols[0].replace(/^"|"$/g, '').trim();
-                    synonymStrings[official] = cols.join(' ').replace(/"/g, '').toLowerCase();
+                    const allSynonymsInRow = cols.map(c => c.replace(/^"|"$/g, '').trim().toLowerCase());
                     
-                    // Map every variant in the row back to the Official name
-                    cols.forEach(variant => {
-                        const cleanVariant = variant.replace(/^"|"$/g, '').trim();
-                        if(cleanVariant) officialLookup[cleanVariant.toLowerCase()] = official;
+                    // Store the official search string
+                    synonymStrings[official] = allSynonymsInRow.join(' ');
+                    
+                    // Map every synonym (including the official one) to the Official Label
+                    allSynonymsInRow.forEach(variant => {
+                        if(variant) officialLookup[variant] = official;
                     });
                 }
             });
 
-            // 2. Fetch and Consolidate Directory
+            // 2. Fetch Directory
             const resp = await fetch(directoryUrl);
             const text = await resp.text();
             const rows = text.split(/\r?\n/).filter(line => line.trim().length > 0).slice(1); 
@@ -116,10 +119,11 @@
             fullData = rows.map(row => {
                 const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 const rawLoc = cols[1]?.replace(/^"|"$/g, '').trim() || "Unknown";
+                const cleanRawLoc = rawLoc.toLowerCase();
                 
-                // CONSOLIDATION LOGIC: 
-                // If rawLoc is a synonym, use the Official Name. Otherwise use rawLoc.
-                const officialLoc = officialLookup[rawLoc.toLowerCase()] || rawLoc;
+                // CONSOLIDATION CHECK
+                // Does this raw name exist as a synonym? If so, grab the official version.
+                const officialLoc = officialLookup[cleanRawLoc] || rawLoc;
 
                 return {
                     cat: cols[0]?.replace(/^"|"$/g, '').trim() || "Other",
@@ -127,13 +131,17 @@
                     name: cols[2]?.replace(/^"|"$/g, '').trim() || "---",
                     phone: cols[3]?.replace(/^"|"$/g, '').trim() || "",
                     email: cols[4]?.replace(/^"|"$/g, '').trim() || "",
+                    // The search field includes the official name plus all its synonyms
                     searchField: (synonymStrings[officialLoc] || officialLoc).toLowerCase()
                 };
             }).filter(item => item.phone !== "" || item.email !== "");
 
             renderTabs();
             renderDirectory();
-        } catch (e) { document.getElementById('loading').innerHTML = "System Error: Check CSV Configuration"; }
+        } catch (e) { 
+            console.error(e);
+            document.getElementById('loading').innerHTML = "System Error: Check CSV Configuration"; 
+        }
     }
 
     function renderTabs() {
