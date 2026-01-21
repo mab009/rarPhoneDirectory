@@ -29,10 +29,8 @@
         .display-text { padding: 12px; font-size: 1rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
         .actions-cell { display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; gap: 10px; }
         .phone-link { font-size: 0.95rem; color: var(--blue); text-decoration: none; font-weight: 700; white-space: nowrap !important; transition: transform 0.1s; }
-        .phone-link:active { transform: scale(0.95); opacity: 0.7; }
 
         .action-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1.2rem; flex-shrink: 0; border: 1px solid #d1d9e6; position: relative; transition: all 0.2s ease; }
-        .action-icon:active { transform: scale(1.1); }
         .sms-btn { background: #e8f5e9; color: var(--green); }
         .email-btn { background: #eef2f7; color: var(--navy); }
 
@@ -47,7 +45,7 @@
 <div id="tabs" class="tabs-wrapper"></div>
 <div class="search-container">
     <div class="search-wrapper">
-        <input type="text" id="searchInput" placeholder="Search entries or sites..." onkeyup="filterList()">
+        <input type="text" id="searchInput" placeholder="Search names or sites..." onkeyup="filterList()">
         <div id="clearSearch" onclick="resetSearch()">✕</div>
     </div>
 </div>
@@ -143,11 +141,6 @@
         });
 
         const sortedLocs = Object.keys(grouped).sort();
-        if (sortedLocs.length === 0) {
-            container.innerHTML = '<div style="padding:20px; color:var(--gray); text-align:center;">No entries found.</div>';
-            return;
-        }
-
         sortedLocs.forEach(loc => {
             const section = document.createElement('div');
             section.className = 'location-section';
@@ -170,7 +163,10 @@
                 const emailHtml = c.email 
                     ? `<a href="mailto:${c.email}" class="action-icon email-btn" title="Email ${c.name}">✉</a>` 
                     : `<div style="width:36px"></div>`;
-                const smsHtml = c.phone 
+                
+                // ONLY SHOW SMS FOR PROVIDERS
+                const showSms = (c.cat.toLowerCase() === 'provider');
+                const smsHtml = (c.phone && showSms) 
                     ? `<a href="sms:${dial}" class="action-icon sms-btn" title="Text ${c.phone}">💬</a>` 
                     : `<div style="width:36px"></div>`;
 
