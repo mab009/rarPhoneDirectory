@@ -1,10 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RAR Directory</title>
+    <style>
+        :root { --dark: #3c4043; --blue: #1a73e8; --navy: #003366; --green: #28a745; --gray: #70757a; --border: #dadce0; --light-bg: #f8f9fa; }
+        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 0; background: #fff; color: var(--dark); -webkit-tap-highlight-color: transparent; }
+        
+        header { background: var(--dark); color: white; padding: 12px; text-align: center; position: sticky; top: 0; z-index: 1001; }
+        header h1 { margin: 0; font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; }
+
+        .tabs-wrapper { position: sticky; top: 45px; background: white; z-index: 1000; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid var(--border); display: flex; padding: 8px 10px; gap: 8px; scrollbar-width: none; }
+        .tabs-wrapper::-webkit-scrollbar { display: none; }
+        .tab { padding: 8px 16px; font-size: 0.85rem; font-weight: 600; border-radius: 20px; background: var(--light-bg); color: var(--gray); cursor: pointer; border: 1px solid var(--border); transition: 0.2s; }
+        .tab.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+        .search-container { padding: 10px; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 98px; z-index: 999; display: flex; align-items: center; }
+        .search-wrapper { position: relative; width: 100%; }
+        #searchInput { width: 100%; padding: 12px 40px 12px 16px; border-radius: 24px; border: 2px solid var(--border); font-size: 16px; outline: none; box-sizing: border-box; }
+        #clearSearch { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: #ccc; color: white; width: 22px; height: 22px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
+
+        .location-section { border-bottom: 1px solid var(--border); }
+        .location-header { background: var(--light-bg); padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; font-size: 1rem; font-weight: 700; align-items: center; }
+        .location-content { display: none; }
+        
+        .contact-row { display: grid; grid-template-columns: 1fr 210px; align-items: center; border-bottom: 1px solid #f1f3f4; width: 100%; }
+        .display-text { padding: 12px; font-size: 1rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+        .actions-cell { display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; gap: 10px; }
+        .phone-link { font-size: 0.95rem; color: var(--blue); text-decoration: none; font-weight: 700; white-space: nowrap !important; transition: transform 0.1s; }
+
+        .action-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1.2rem; flex-shrink: 0; border: 1px solid #d1d9e6; position: relative; transition: all 0.2s ease; }
+        .sms-btn { background: #e8f5e9; color: var(--green); }
+        .email-btn { background: #eef2f7; color: var(--navy); }
+
+        .chevron::after { content: '▼'; font-size: 0.7rem; color: var(--gray); }
+        .active .chevron::after { content: '▲'; }
+        #loading { text-align: center; padding: 50px; color: var(--gray); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<header><h1>RAR DIRECTORY</h1></header>
+<div id="tabs" class="tabs-wrapper"></div>
+<div class="search-container">
+    <div class="search-wrapper">
+        <input type="text" id="searchInput" placeholder="Search names or sites..." onkeyup="filterList()">
+        <div id="clearSearch" onclick="resetSearch()">✕</div>
+    </div>
+</div>
+
+<div id="directory">
+    <div id="loading">Syncing Directory...</div>
+</div>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RAR Directory</title>
+    <style>
+        :root { --dark: #3c4043; --blue: #1a73e8; --navy: #003366; --green: #28a745; --gray: #70757a; --border: #dadce0; --light-bg: #f8f9fa; }
+        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 0; background: #fff; color: var(--dark); -webkit-tap-highlight-color: transparent; }
+        
+        header { background: var(--dark); color: white; padding: 12px; text-align: center; position: sticky; top: 0; z-index: 1001; }
+        header h1 { margin: 0; font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; }
+
+        .tabs-wrapper { position: sticky; top: 45px; background: white; z-index: 1000; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid var(--border); display: flex; padding: 8px 10px; gap: 8px; scrollbar-width: none; }
+        .tabs-wrapper::-webkit-scrollbar { display: none; }
+        .tab { padding: 8px 16px; font-size: 0.85rem; font-weight: 600; border-radius: 20px; background: var(--light-bg); color: var(--gray); cursor: pointer; border: 1px solid var(--border); transition: 0.2s; }
+        .tab.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+        .search-container { padding: 10px; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 98px; z-index: 999; display: flex; align-items: center; }
+        .search-wrapper { position: relative; width: 100%; }
+        #searchInput { width: 100%; padding: 12px 40px 12px 16px; border-radius: 24px; border: 2px solid var(--border); font-size: 16px; outline: none; box-sizing: border-box; }
+        #clearSearch { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: #ccc; color: white; width: 22px; height: 22px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
+
+        .location-section { border-bottom: 1px solid var(--border); }
+        .location-header { background: var(--light-bg); padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; font-size: 1rem; font-weight: 700; align-items: center; }
+        .location-content { display: none; }
+        
+        .contact-row { display: grid; grid-template-columns: 1fr 210px; align-items: center; border-bottom: 1px solid #f1f3f4; width: 100%; }
+        .display-text { padding: 12px; font-size: 1rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+        .actions-cell { display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; gap: 10px; }
+        .phone-link { font-size: 0.95rem; color: var(--blue); text-decoration: none; font-weight: 700; white-space: nowrap !important; transition: transform 0.1s; }
+
+        .action-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1.2rem; flex-shrink: 0; border: 1px solid #d1d9e6; position: relative; transition: all 0.2s ease; }
+        .sms-btn { background: #e8f5e9; color: var(--green); }
+        .email-btn { background: #eef2f7; color: var(--navy); }
+
+        .chevron::after { content: '▼'; font-size: 0.7rem; color: var(--gray); }
+        .active .chevron::after { content: '▲'; }
+        #loading { text-align: center; padding: 50px; color: var(--gray); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<header><h1>RAR DIRECTORY</h1></header>
+<div id="tabs" class="tabs-wrapper"></div>
+<div class="search-container">
+    <div class="search-wrapper">
+        <input type="text" id="searchInput" placeholder="Search names or sites..." onkeyup="filterList()">
+        <div id="clearSearch" onclick="resetSearch()">✕</div>
+    </div>
+</div>
+
+<div id="directory">
+    <div id="loading">Syncing Directory...</div>
+</div>
+
 <script>
     const directoryUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?gid=1696549759&single=true&output=csv';
     const synonymsUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?gid=1225631162&single=true&output=csv';
     
-    // The script will now look for these KEYWORDS within your category names
-    const smsKeywords = ['radiologist', 'physician', 'nurse', 'provider', 'pa', 'np'];
-
     let fullData = [];
     let officialLookup = {}; 
     let synonymStrings = {}; 
@@ -57,6 +166,25 @@
         }
     }
 
+    function renderTabs() {
+        const categories = ["All", ...new Set(fullData.map(item => item.cat))].sort();
+        const tabBox = document.getElementById('tabs');
+        tabBox.innerHTML = '';
+        categories.forEach(cat => {
+            const btn = document.createElement('div');
+            btn.className = `tab ${cat === currentCategory ? 'active' : ''}`;
+            btn.innerText = cat;
+            btn.onclick = () => {
+                currentCategory = cat;
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+                resetSearch();
+                renderDirectory();
+            };
+            tabBox.appendChild(btn);
+        });
+    }
+
     function renderDirectory() {
         const container = document.getElementById('directory');
         container.innerHTML = '';
@@ -83,6 +211,7 @@
             grouped[loc].sort((a,b) => a.name.localeCompare(b.name)).forEach(c => {
                 const dial = c.phone.replace(/\D/g, '');
                 const extraSyns = synonymStrings[c.loc] || "";
+                
                 const row = document.createElement('div');
                 row.className = 'contact-row';
                 row.setAttribute('data-search', `${c.loc} ${c.name} ${c.email} ${c.phone} ${extraSyns}`.toLowerCase());
@@ -91,10 +220,8 @@
                     ? `<a href="mailto:${c.email}" class="action-icon email-btn" title="Email ${c.name}">✉</a>` 
                     : `<div style="width:36px"></div>`;
                 
-                // BROAD MATCH LOGIC: Check if any keyword exists in the category name
-                const catLower = c.cat.toLowerCase();
-                const showSms = smsKeywords.some(keyword => catLower.includes(keyword));
-                
+                // ONLY SHOW SMS FOR PROVIDERS
+                const showSms = (c.cat.toLowerCase() === 'provider');
                 const smsHtml = (c.phone && showSms) 
                     ? `<a href="sms:${dial}" class="action-icon sms-btn" title="Text ${c.phone}">💬</a>` 
                     : `<div style="width:36px"></div>`;
@@ -107,5 +234,53 @@
             container.appendChild(section);
         });
     }
-    // ... [Remainder of code same as previous version]
+
+    function toggle(el) {
+        el.classList.toggle('active');
+        const panel = el.nextElementSibling;
+        panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function resetSearch() {
+        const input = document.getElementById('searchInput');
+        input.value = "";
+        document.getElementById('clearSearch').style.display = 'none';
+        filterList();
+    }
+
+    function filterList() {
+        const input = document.getElementById('searchInput');
+        const q = input.value.toLowerCase().trim();
+        const clearBtn = document.getElementById('clearSearch');
+        const sections = document.querySelectorAll('.location-section');
+        clearBtn.style.display = q === "" ? 'none' : 'flex';
+
+        sections.forEach(s => {
+            let hasMatch = false;
+            s.querySelectorAll('.contact-row').forEach(r => {
+                if (r.getAttribute('data-search').includes(q)) {
+                    r.style.display = 'grid';
+                    hasMatch = true;
+                } else {
+                    r.style.display = 'none';
+                }
+            });
+            if (q === "") {
+                s.style.display = 'block';
+                s.querySelector('.location-header').classList.remove('active');
+                s.querySelector('.location-content').style.display = 'none';
+            } else {
+                s.style.display = hasMatch ? 'block' : 'none';
+                if (hasMatch) {
+                    s.querySelector('.location-header').classList.add('active');
+                    s.querySelector('.location-content').style.display = 'block';
+                }
+            }
+        });
+    }
+    init();
 </script>
+</body>
+</html>
+</body>
+</html>
