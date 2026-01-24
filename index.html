@@ -5,17 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RAR Directory</title>
     <style>
-        :root { 
-            --dark: #3c4043; 
-            --blue: #1a73e8; 
-            --navy: #003366; 
-            --green: #28a745; 
-            --gray: #70757a; 
-            --border: #dadce0; 
-            --light-bg: #f8f9fa; 
-            --zebra: #f1f3f4; /* Subtle gray for alternating rows */
-            --hover: #e8f0fe; /* Light blue for active/hover state */
-        }
+        :root { --dark: #3c4043; --blue: #1a73e8; --navy: #003366; --green: #28a745; --gray: #70757a; --border: #dadce0; --light-bg: #f8f9fa; }
         body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 0; background: #fff; color: var(--dark); -webkit-tap-highlight-color: transparent; }
         
         header { background: var(--dark); color: white; padding: 12px; text-align: center; position: sticky; top: 0; z-index: 1001; }
@@ -32,32 +22,34 @@
         #clearSearch { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: #ccc; color: white; width: 22px; height: 22px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
 
         .location-section { border-bottom: 1px solid var(--border); }
-        .location-header { background: var(--light-bg); padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; font-size: 1rem; font-weight: 700; align-items: center; border-bottom: 1px solid var(--border); }
+        .location-header { background: var(--light-bg); padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; font-size: 1rem; font-weight: 700; align-items: center; }
         .location-content { display: none; }
         
-        /* THE VISUAL FIX: Zebra Striping and Grid Alignment */
+        /* ENTIRE ROW IS NOW CLICKABLE */
         .contact-row { 
             display: grid; 
             grid-template-columns: 1fr 210px; 
             align-items: center; 
+            border-bottom: 1px solid #f1f3f4; 
             width: 100%; 
-            transition: background-color 0.1s;
+            cursor: pointer; 
+            transition: background 0.15s;
         }
+        .contact-row:hover { background-color: #f1f8ff; }
+        .contact-row:active { background-color: #e2efff; }
 
-        /* Every even row gets a subtle tint */
-        .contact-row:nth-child(even) { background-color: var(--zebra); }
+        .display-text { padding: 12px; font-size: 1rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+        .actions-cell { display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; gap: 10px; }
         
-        /* Highlight on hover (Laptop) or active tap (Mobile) */
-        .contact-row:hover { background-color: var(--hover); }
+        .phone-link { font-size: 0.95rem; color: var(--blue); text-decoration: none; font-weight: 700; white-space: nowrap !important; }
 
-        .display-text { padding: 14px 12px; font-size: 1rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; border-right: 1px solid rgba(0,0,0,0.03); }
-        
-        .actions-cell { display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; gap: 10px; height: 100%; }
-        .phone-link { font-size: 0.95rem; color: var(--blue); text-decoration: none; font-weight: 700; white-space: nowrap !important; transition: transform 0.1s; padding: 4px 0; }
-        .phone-link:active { transform: scale(0.95); opacity: 0.7; }
-
-        .action-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1.2rem; flex-shrink: 0; border: 1px solid #d1d9e6; position: relative; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .action-icon:active { transform: scale(1.1); }
+        .action-icon { 
+            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; text-decoration: none; font-size: 1.2rem; flex-shrink: 0; 
+            border: 1px solid #d1d9e6; position: relative; transition: transform 0.2s; 
+            z-index: 2; /* Keeps buttons above the row click area */
+        }
+        .action-icon:hover { transform: scale(1.15); }
         .sms-btn { background: #e8f5e9; color: var(--green); }
         .email-btn { background: #eef2f7; color: var(--navy); }
 
@@ -82,7 +74,6 @@
 </div>
 
 <script>
-    // CSV URL configuration remains the same
     const directoryUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?gid=1696549759&single=true&output=csv';
     const synonymsUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRR4JXxJLCTe_P6-il5qzS-oKP8gU_1jYkCHGHH0tYVoejVgMXl3CGifcgC603ZiVLOAl53zL_u9P83/pub?gid=1225631162&single=true&output=csv';
     
@@ -183,20 +174,29 @@
             grouped[loc].sort((a,b) => a.name.localeCompare(b.name)).forEach(c => {
                 const dial = c.phone.replace(/\D/g, '');
                 const extraSyns = synonymStrings[c.loc] || "";
+                
                 const row = document.createElement('div');
                 row.className = 'contact-row';
                 row.setAttribute('data-search', `${c.loc} ${c.name} ${c.email} ${c.phone} ${extraSyns}`.toLowerCase());
+                
+                // ACTION: Clicking the row triggers the phone call
+                row.onclick = (e) => {
+                    // Prevent call if user clicked the SMS or Email button specifically
+                    if (!e.target.closest('.action-icon')) {
+                        window.location.href = `tel:${dial}`;
+                    }
+                };
                 
                 const cat = c.cat.toLowerCase();
                 const isPerson = cat.includes('rad') || cat.includes('phys') || cat.includes('nurse') || cat.includes('pa') || cat.includes('np') || cat.includes('provider');
                 const hasEmail = c.email && c.email.trim().length > 3;
 
                 const emailHtml = hasEmail 
-                    ? `<a href="mailto:${c.email}" class="action-icon email-btn" title="Email ${c.name}">✉</a>` 
+                    ? `<a href="mailto:${c.email}" class="action-icon email-btn" title="Email ${c.name}" onclick="event.stopPropagation()">✉</a>` 
                     : `<div style="width:36px"></div>`;
                 
                 const smsHtml = (c.phone && isPerson) 
-                    ? `<a href="sms:${dial}" class="action-icon sms-btn" title="Text ${c.phone}">💬</a>` 
+                    ? `<a href="sms:${dial}" class="action-icon sms-btn" title="Text ${c.phone}" onclick="event.stopPropagation()">💬</a>` 
                     : `<div style="width:36px"></div>`;
 
                 row.innerHTML = `<span class="display-text">${c.name}</span><div class="actions-cell"><a href="tel:${dial}" class="phone-link">${c.phone}</a>${smsHtml}${emailHtml}</div>`;
